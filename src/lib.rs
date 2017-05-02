@@ -1,4 +1,3 @@
-#![feature(const_fn)]
 #![no_std]
 
 use core::cell::Cell;
@@ -6,11 +5,12 @@ use core::cell::Cell;
 macro_rules! static_semaphore {
     () => {        
         {
-            static mut SEM: Semaphore = Semaphore { reader: Cell::new(0), writer: Cell::new(0) };
+            static mut SEM: Option<Semaphore> = None;;
             unsafe {
+                SEM = Some(Semaphore { reader: Cell::new(0), writer: Cell::new(0) });
                 (
-                    SemaphoreReader { semaphore: &SEM},
-                    SemaphoreWriter { semaphore: &SEM}
+                    SemaphoreReader { semaphore: &SEM.as_ref().unwrap()},
+                    SemaphoreWriter { semaphore: &SEM.as_ref().unwrap()}
                 )
             }
         }
