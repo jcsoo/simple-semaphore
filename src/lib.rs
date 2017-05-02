@@ -2,15 +2,16 @@
 
 use core::cell::Cell;
 
+#[macro_export]
 macro_rules! static_semaphore {
     () => {        
         {
-            static mut SEM: Option<Semaphore> = None;;
+            static mut SEM: Option<Semaphore> = None;
             unsafe {
-                SEM = Some(Semaphore { reader: Cell::new(0), writer: Cell::new(0) });
+                SEM = Some(Semaphore::new());
                 (
-                    SemaphoreReader { semaphore: &SEM.as_ref().unwrap()},
-                    SemaphoreWriter { semaphore: &SEM.as_ref().unwrap()}
+                    SemaphoreReader::new(&SEM.as_ref().unwrap()),
+                    SemaphoreWriter::new(&SEM.as_ref().unwrap())
                 )
             }
         }
@@ -42,6 +43,9 @@ pub struct SemaphoreReader<'a> {
 }
 
 impl<'a> SemaphoreReader<'a> {
+    pub fn new(semaphore: &Semaphore) -> SemaphoreReader {
+        SemaphoreReader { semaphore: semaphore }
+    }
     /// Read and clear the value of the Semaphore
     pub fn read(&self) -> usize {
         let sem = self.semaphore;
@@ -57,6 +61,10 @@ pub struct SemaphoreWriter<'a> {
 }
 
 impl<'a> SemaphoreWriter<'a> {
+    pub fn new(semaphore: &Semaphore) -> SemaphoreWriter {
+        SemaphoreWriter { semaphore: semaphore }
+    }
+    
     /// Increment the value of the Semaphore
     pub fn write(&self, value: usize) {
         let sem = self.semaphore;
